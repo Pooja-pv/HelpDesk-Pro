@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}
+    Sign in · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <section class="auth-wrap">
+        <div class="auth-aside">
+            <div class="auth-brand-symbol">
+                <span>
+                </span>
+                <span>
+                </span>
+                <span>
+                </span>
+                <span>
+                </span>
+            </div>
+            <div class="eyebrow">
+                THE WORKPLACE SUPPORT PLATFORM
+            </div>
+            <h1>
+                Great work deserves
+                <span>
+                    great support.
+                </span>
+            </h1>
+            <p>
+                One calm, clear place to get help, track progress, and move work forward.
+            </p>
+            <div class="auth-proof">
+                <span class="proof-check">
+                    ✓
+                </span>
+                <span>
+                    Every request. One shared workspace.
+                </span>
+            </div>
+            <div class="auth-orbit orbit-one">
+            </div>
+            <div class="auth-orbit orbit-two">
+            </div>
+        </div>
+        <div class="auth-card">
+            <div class="eyebrow">
+                WELCOME BACK
+            </div>
+            <h2>
+                Sign in to your workspace
+            </h2>
+            <p class="muted">
+                Use your workplace account to continue.
+            </p>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="form-errors">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                <div class="field">
+                    <label for="{{ form.username.id_for_label }}">
+                        Username
+                    </label>
+                    {{ form.username }}
+                    {{ form.username.errors }}
+                </div>
+                <div class="field">
+                    <div class="label-row">
+                        <label for="{{ form.password.id_for_label }}">
+                            Password
+                        </label>
+                    </div>
+                    {{ form.password }}
+                    {{ form.password.errors }}
+                </div>
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+                <button class="button primary full" type="submit">
+                    Sign in securely
+                    <span>
+                        →
+                    </span>
+                </button>
+            </form>
+            <p class="auth-bottom">
+                New to HelpDesk Pro?
+                <a href="{% url 'accounts:signup' %}">
+                    Create your account
+                </a>
+            </p>
+            <div class="auth-privacy">
+                <span>
+                    ◇
+                </span>
+                Secure access for approved employees
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}
+    {{ page_title }}
+    · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <section class="hero-row">
+        <div>
+            <div class="eyebrow">
+                <span class="eyebrow-dot">
+                </span>
+                KNOWLEDGE BASE / CONTENT MANAGEMENT
+            </div>
+            <h1>
+                {{ page_title }}
+                <span class="heading-period">
+                    .
+                </span>
+            </h1>
+            <p class="hero-subtitle">
+                Write clear, actionable guides that reduce repeated support requests.
+            </p>
+        </div>
+    </section>
+    <section class="panel dashboard-panel" style="max-width:900px">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="message error">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            {% for field in form %}
+                <div class="form-field" style="margin-bottom:20px">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+                    {% if field.name == "is_published" %}
+                        <div style="display:flex;gap:10px;align-items:center">
+                            {{ field }}
+                            <span>
+                                Make this guide visible to employees
+                            </span>
+                        </div>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="field-error">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+                <a class="button secondary" href="{% url 'dashboard:knowledge-list' %}">
+                    Cancel
+                </a>
+                <button class="button primary" type="submit">
+                    Save article
+                </button>
+            </div>
+        </form>
+    </section>
+{% endblock %}

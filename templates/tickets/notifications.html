@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}
+    Notifications · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <section class="hero-row">
+        <div>
+            <div class="eyebrow">
+                <span class="eyebrow-dot">
+                </span>
+                WORKSPACE / UPDATES
+            </div>
+            <h1>
+                Notifications
+                <span class="heading-period">
+                    .
+                </span>
+            </h1>
+            <p class="hero-subtitle">
+                Important changes and conversations from your tickets.
+            </p>
+        </div>
+        {% if unread_notification_count %}
+            <form method="post" action="{% url 'tickets:notification-read-all' %}">
+                {% csrf_token %}
+                <button class="button secondary" type="submit">
+                    Mark all as read
+                    <span>
+                        ✓
+                    </span>
+                </button>
+            </form>
+        {% endif %}
+    </section>
+    <section class="panel notifications-page">
+        {% for notification in notifications %}
+            <form method="post" action="{% url 'tickets:notification-open' notification.pk %}" class="notification-row-form">
+                {% csrf_token %}
+                <button type="submit" class="notification-row {% if not notification.is_read %}unread{% endif %}">
+                    <span class="notification-mark">
+                        {% if notification.is_read %}
+                            ✓
+                        {% else %}
+                            •
+                        {% endif %}
+                    </span>
+                    <span class="notification-row-copy">
+                        <strong>
+                            {{ notification.message }}
+                        </strong>
+                        <small>
+                            Ticket HD-
+                            {{ notification.ticket_id }}
+                            ·
+                            {{ notification.created_at|date:"M d, Y · H:i" }}
+                        </small>
+                    </span>
+                    <span class="notification-open">
+                        Open ticket ↗
+                    </span>
+                </button>
+            </form>
+        {% empty %}
+            <div class="empty">
+                <div class="empty-icon">
+                    ✧
+                </div>
+                <h3>
+                    All quiet for now
+                </h3>
+                <p>
+                    When a ticket changes or someone replies, you’ll see the update here.
+                </p>
+                <a class="button primary" href="{% url 'tickets:list' %}">
+                    Browse tickets
+                </a>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}

@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+{% block title %}
+    HD-
+    {{ ticket.pk }}
+    · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <div class="breadcrumbs">
+        <a href="{% url 'tickets:list' %}">
+            Tickets
+        </a>
+        <span>
+            /
+        </span>
+        <span>
+            HD-
+            {{ ticket.pk }}
+        </span>
+    </div>
+    <section class="detail-heading">
+        <div>
+            <div class="eyebrow">
+                <span class="eyebrow-dot">
+                </span>
+                TICKET HD-
+                {{ ticket.pk }}
+            </div>
+            <h1>
+                {{ ticket.title }}
+                <span class="heading-period">
+                    .
+                </span>
+            </h1>
+            <p class="hero-subtitle">
+                Created
+                {{ ticket.created_at|date:"M d, Y · H:i" }}
+                by
+                {{ ticket.created_by.get_full_name|default:ticket.created_by.username }}
+            </p>
+        </div>
+        <span class="status large {{ ticket.status }}">
+            <i>
+            </i>
+            {{ ticket.get_status_display }}
+        </span>
+    </section>
+    <div class="detail-grid">
+        <div class="detail-main-column">
+            <section class="panel detail-main">
+                <div class="panel-heading">
+                    <div>
+                        <span class="panel-kicker">
+                            REQUEST DETAILS
+                        </span>
+                        <h2>
+                            What needs help?
+                        </h2>
+                    </div>
+                    <span class="priority {{ ticket.priority }}">
+                        <i>
+                        </i>
+                        {{ ticket.get_priority_display }}
+                    </span>
+                </div>
+                <p class="description">
+                    {{ ticket.description|linebreaksbr }}
+                </p>
+                <div class="detail-meta">
+                    <div>
+                        <span>
+                            Category
+                        </span>
+                        <strong>
+                            {{ ticket.category }}
+                        </strong>
+                    </div>
+                    <div>
+                        <span>
+                            Created
+                        </span>
+                        <strong>
+                            {{ ticket.created_at|date:"M d, Y" }}
+                        </strong>
+                    </div>
+                    <div>
+                        <span>
+                            Assigned to
+                        </span>
+                        <strong>
+                            {% if ticket.assigned_to %}
+                                {{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.username }}
+                            {% else %}
+                                Awaiting assignment
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div>
+                        <span>
+                            Last activity
+                        </span>
+                        <strong>
+                            {{ ticket.updated_at|date:"M d, Y · H:i" }}
+                        </strong>
+                    </div>
+                    <div>
+                        <span>
+                            SLA deadline
+                        </span>
+                        <strong>
+                            {% if ticket.is_overdue %}
+                                <span style="color:#b42318">
+                                    Overdue ·
+                                {% else %}
+                                {% endif %}
+                                {{ ticket.sla_deadline|date:"M d, Y · H:i" }}
+                                {% if ticket.is_overdue %}
+                                </span>
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+            </section>
+            <section class="panel comments-panel">
+                <div class="panel-heading">
+                    <div>
+                        <span class="panel-kicker">
+                            TICKET ACTIVITY
+                        </span>
+                        <h2>
+                            Conversation
+                        </h2>
+                        <p>
+                            Keep every update connected to this request.
+                        </p>
+                    </div>
+                    <span class="count-pill">
+                        {{ comments|length }}
+                    </span>
+                </div>
+                <div class="comment-list">
+                    {% for comment in comments %}
+                        <article class="comment">
+                            <div class="comment-avatar">
+                                {{ comment.author.first_name|first|default:comment.author.username|first|upper }}
+                            </div>
+                            <div class="comment-content">
+                                <div class="comment-meta">
+                                    <strong>
+                                        {{ comment.author.get_full_name|default:comment.author.username }}
+                                    </strong>
+                                    {% if comment.author.is_staff %}
+                                        <span class="role-pill">
+                                            Support
+                                        </span>
+                                    {% else %}
+                                        <span class="role-pill employee-role">
+                                            Employee
+                                        </span>
+                                    {% endif %}
+                                    <time>
+                                        {{ comment.created_at|date:"M d, Y · H:i" }}
+                                    </time>
+                                </div>
+                                <p>
+                                    {{ comment.message|linebreaksbr }}
+                                </p>
+                            </div>
+                        </article>
+                    {% empty %}
+                        <div class="conversation-empty">
+                            <span>
+                                ✧
+                            </span>
+                            <p>
+                                No replies yet.
+                            </p>
+                            <small>
+                                Start the conversation below.
+                            </small>
+                        </div>
+                    {% endfor %}
+                </div>
+                <form method="post" action="{% url 'tickets:comment' ticket.pk %}" class="comment-form">
+                    {% csrf_token %}
+                    <div class="field">
+                        <label for="{{ comment_form.message.id_for_label }}">
+                            {{ comment_form.message.label }}
+                        </label>
+                        {{ comment_form.message }}
+                        {% for error in comment_form.message.errors %}
+                            <small class="error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+                    </div>
+                    <div class="comment-submit">
+                        <span class="muted small-text">
+                            Keep messages respectful and relevant.
+                        </span>
+                        <button class="button primary" type="submit">
+                            Post update
+                            <span>
+                                →
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+        <aside class="detail-side-column">
+            {% if user.is_staff %}
+                <section class="panel manage-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <span class="panel-kicker">
+                                SUPPORT CONTROLS
+                            </span>
+                            <h2>
+                                Manage ticket
+                            </h2>
+                        </div>
+                        <span class="panel-icon">
+                            ⚙
+                        </span>
+                    </div>
+                    <p class="muted small-text">
+                        Update the workflow and ownership of this request.
+                    </p>
+                    <form method="post" action="{% url 'tickets:update' ticket.pk %}">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="field">
+                                <label for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+                                {{ field }}
+                                {% for error in field.errors %}
+                                    <small class="error">
+                                        {{ error }}
+                                    </small>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <button class="button primary full" type="submit">
+                            Save changes
+                            <span>
+                                ✓
+                            </span>
+                        </button>
+                    </form>
+                </section>
+            {% endif %}
+            <section class="panel ticket-summary">
+                <span class="panel-kicker">
+                    AT A GLANCE
+                </span>
+                <div class="summary-item">
+                    <span class="summary-icon">
+                        ♧
+                    </span>
+                    <div>
+                        <small>
+                            Requester
+                        </small>
+                        <strong>
+                            {{ ticket.created_by.get_full_name|default:ticket.created_by.username }}
+                        </strong>
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-icon">
+                        ◷
+                    </span>
+                    <div>
+                        <small>
+                            Age
+                        </small>
+                        <strong>
+                            {{ ticket.created_at|timesince }}
+                        </strong>
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-icon">
+                        ↻
+                    </span>
+                    <div>
+                        <small>
+                            Current status
+                        </small>
+                        <strong>
+                            {{ ticket.get_status_display }}
+                        </strong>
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-icon">
+                        ◷
+                    </span>
+                    <div>
+                        <small>
+                            SLA
+                        </small>
+                        <strong>
+                            {% if ticket.is_overdue %}
+                                Overdue
+                            {% else %}
+                                Due
+                                {{ ticket.sla_deadline|date:"M d, H:i" }}
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+                <a class="summary-back" href="{% url 'tickets:list' %}">
+                    ← Back to all tickets
+                </a>
+            </section>
+        </aside>
+    </div>
+    <section class="panel dashboard-panel" style="margin-top:24px">
+        <div class="panel-heading">
+            <div>
+                <span class="panel-kicker">
+                    TRACEABILITY
+                </span>
+                <h2>
+                    Ticket activity
+                </h2>
+                <p>
+                    A record of important changes to this request.
+                </p>
+            </div>
+        </div>
+        <div class="activity-timeline" style="display:grid;gap:14px;padding:4px 0 8px">
+            {% for event in audit_events %}
+                <div style="display:grid;grid-template-columns:12px 1fr;gap:12px;align-items:start">
+                    <span style="width:9px;height:9px;border-radius:50%;background:#4f46e5;margin-top:7px">
+                    </span>
+                    <div>
+                        <strong>
+                            {{ event.action }}
+                        </strong>
+                        <p style="margin:4px 0;color:#667085">
+                            {{ event.details }}
+                            ·
+                            {{ event.created_at|date:"M d, Y H:i" }}
+                            {% if event.actor %}
+                                ·
+                                {{ event.actor.get_short_name|default:event.actor.username }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            {% empty %}
+                <p>
+                    No activity has been recorded yet.
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

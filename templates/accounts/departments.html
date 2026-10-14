@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}
+    Departments · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <section class="hero-row">
+        <div>
+            <div class="eyebrow">
+                <span class="eyebrow-dot">
+                </span>
+                ADMINISTRATION / ORGANIZATION
+            </div>
+            <h1>
+                Departments
+                <span class="heading-period">
+                    .
+                </span>
+            </h1>
+            <p class="hero-subtitle">
+                Organize teams and keep department information current.
+            </p>
+        </div>
+        <div class="hero-actions">
+            <a class="button primary" href="{% url 'accounts:department-create' %}">
+                <span class="button-plus">
+                    ＋
+                </span>
+                Add department
+            </a>
+        </div>
+    </section>
+    <section class="panel dashboard-panel">
+        <form method="get" class="filter-form" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+            <input type="search" name="q" value="{{ query }}" placeholder="Search departments" aria-label="Search departments">
+            <button class="button primary" type="submit">
+                Search
+            </button>
+            {% if query %}
+                <a class="button secondary" href="{% url 'accounts:departments' %}">
+                    Clear
+                </a>
+            {% endif %}
+        </form>
+        <div class="table-scroll">
+            <table class="ticket-table">
+                <thead>
+                    <tr>
+                        <th>
+                            Department
+                        </th>
+                        <th>
+                            Description
+                        </th>
+                        <th>
+                            Status
+                        </th>
+                        <th>
+                            Updated
+                        </th>
+                        <th>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for department in departments %}
+                        <tr>
+                            <td>
+                                <strong>
+                                    {{ department.name }}
+                                </strong>
+                            </td>
+                            <td>
+                                {{ department.description|default:"—"|truncatechars:90 }}
+                            </td>
+                            <td>
+                                {% if department.is_active %}
+                                    <span class="status resolved">
+                                        <i>
+                                        </i>
+                                        Active
+                                    </span>
+                                {% else %}
+                                    <span class="status closed">
+                                        <i>
+                                        </i>
+                                        Inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ department.updated_at|date:"M d, Y" }}
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:8px;align-items:center">
+                                    <a class="text-link" href="{% url 'accounts:department-edit' department.pk %}">
+                                        Edit
+                                    </a>
+                                    <form method="post" action="{% url 'accounts:department-toggle' department.pk %}">
+                                        {% csrf_token %}
+                                        <button class="text-link" type="submit" data-confirm="{% if department.is_active %}Deactivate{% else %}Activate{% endif %} {{ department.name }}?">
+                                            {% if department.is_active %}
+                                                Deactivate
+                                            {% else %}
+                                                Activate
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty">
+                                    <h3>
+                                        No departments found
+                                    </h3>
+                                    <p>
+                                        Create a department to start organizing your support operation.
+                                    </p>
+                                    <a class="button primary" href="{% url 'accounts:department-create' %}">
+                                        Add department
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination" style="display:flex;justify-content:space-between;align-items:center;padding-top:18px">
+                <span>
+                    Page
+                    {{ page_obj.number }}
+                    of
+                    {{ page_obj.paginator.num_pages }}
+                </span>
+                <div style="display:flex;gap:8px">
+                    {% if page_obj.has_previous %}
+                        <a class="button secondary" href="?q={{ query|urlencode }}&page={{ page_obj.previous_page_number }}">
+                            Previous
+                        </a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a class="button secondary" href="?q={{ query|urlencode }}&page={{ page_obj.next_page_number }}">
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

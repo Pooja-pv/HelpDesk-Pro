@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}
+    Tickets · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <section class="hero-row">
+        <div>
+            <div class="eyebrow">
+                <span class="eyebrow-dot">
+                </span>
+                SUPPORT CENTER / REQUESTS
+            </div>
+            <h1>
+                {% if user.is_staff %}
+                    Ticket workspace
+                {% else %}
+                    My tickets
+                {% endif %}
+                <span class="heading-period">
+                    .
+                </span>
+            </h1>
+            <p class="hero-subtitle">
+                Search, prioritize, and track every support request.
+            </p>
+        </div>
+        <div class="hero-actions">
+            {% if user.is_staff %}
+                <a class="button secondary" href="{% url 'tickets:export-csv' %}">
+                    Export CSV
+                    <span>
+                        ↗
+                    </span>
+                </a>
+            {% else %}
+                <a class="button primary" href="{% url 'tickets:create' %}">
+                    <span class="button-plus">
+                        ＋
+                    </span>
+                    New ticket
+                </a>
+            {% endif %}
+        </div>
+    </section>
+    <form class="panel filters" method="get">
+        <div class="field search-field">
+            <label for="id_q">
+                Search tickets
+            </label>
+            <div class="search-input-wrap">
+                <span>
+                    ⌕
+                </span>
+                <input id="id_q" type="search" name="q" value="{{ search_query }}" placeholder="Ticket ID, title, requester, category…">
+            </div>
+        </div>
+        <div class="field">
+            <label for="id_status">
+                Status
+            </label>
+            <select id="id_status" name="status">
+                <option value="">
+                    All statuses
+                </option>
+                {% for value,label in statuses %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field">
+            <label for="id_priority">
+                Priority
+            </label>
+            <select id="id_priority" name="priority">
+                <option value="">
+                    All priorities
+                </option>
+                {% for value,label in priorities %}
+                    <option value="{{ value }}" {% if selected_priority == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field">
+            <label for="id_category">
+                Category
+            </label>
+            <select id="id_category" name="category">
+                <option value="">
+                    All categories
+                </option>
+                {% for item in categories %}
+                    <option value="{{ item }}" {% if selected_category == item %}selected{% endif %}>
+                        {{ item }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button class="button primary" type="submit">
+                Apply filters
+            </button>
+            <a class="button secondary" href="{% url 'tickets:list' %}">
+                Reset
+            </a>
+        </div>
+    </form>
+    <div class="results-line">
+        <span>
+            <strong>
+                {{ page_obj.paginator.count }}
+            </strong>
+            ticket
+            {{ page_obj.paginator.count|pluralize }}
+            found
+        </span>
+        <span>
+            Sorted by latest activity
+        </span>
+    </div>
+    <div class="panel table-panel">
+        {% if tickets %}
+            <div class="table-scroll">
+                <table class="ticket-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                Ticket / subject
+                            </th>
+                            {% if user.is_staff %}
+                                <th>
+                                    Requester
+                                </th>
+                            {% endif %}
+                            <th>
+                                Category
+                            </th>
+                            <th>
+                                Priority
+                            </th>
+                            <th>
+                                Status
+                            </th>
+                            <th>
+                                Last updated
+                            </th>
+                            <th>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                            <tr>
+                                <td>
+                                    <div class="ticket-cell">
+                                        <span class="ticket-ref">
+                                            HD-
+                                            {{ ticket.pk }}
+                                        </span>
+                                        <a class="ticket-title" href="{% url 'tickets:detail' ticket.pk %}">
+                                            {{ ticket.title }}
+                                        </a>
+                                        <small class="subline">
+                                            Opened
+                                            {{ ticket.created_at|date:"M d, Y" }}
+                                        </small>
+                                    </div>
+                                </td>
+                                {% if user.is_staff %}
+                                    <td>
+                                        {{ ticket.created_by.get_full_name|default:ticket.created_by.username }}
+                                    </td>
+                                {% endif %}
+                                <td>
+                                    {{ ticket.category }}
+                                </td>
+                                <td>
+                                    <span class="priority {{ ticket.priority }}">
+                                        <i>
+                                        </i>
+                                        {{ ticket.get_priority_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status {{ ticket.status }}">
+                                        <i>
+                                        </i>
+                                        {{ ticket.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="date-cell">
+                                        {{ ticket.updated_at|date:"M d, Y" }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a class="row-arrow" href="{% url 'tickets:detail' ticket.pk %}" aria-label="Open ticket">
+                                        ↗
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if page_obj.paginator.num_pages > 1 %}
+                <div class="pagination">
+                    <span>
+                        Page
+                        {{ page_obj.number }}
+                        of
+                        {{ page_obj.paginator.num_pages }}
+                    </span>
+                    <div>
+                        {% if page_obj.has_previous %}
+                            <a href="?q={{ search_query|urlencode }}&status={{ selected_status|urlencode }}&priority={{ selected_priority|urlencode }}&category={{ selected_category|urlencode }}&page={{ page_obj.previous_page_number }}">
+                                ← Previous
+                            </a>
+                        {% endif %}
+                        {% if page_obj.has_next %}
+                            <a href="?q={{ search_query|urlencode }}&status={{ selected_status|urlencode }}&priority={{ selected_priority|urlencode }}&category={{ selected_category|urlencode }}&page={{ page_obj.next_page_number }}">
+                                Next →
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="empty">
+                <div class="empty-icon">
+                    ⌕
+                </div>
+                <h3>
+                    No matching tickets
+                </h3>
+                <p>
+                    Try another search or clear your filters to see more results.
+                </p>
+                <a class="button primary" href="{% url 'tickets:list' %}">
+                    Clear filters
+                </a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

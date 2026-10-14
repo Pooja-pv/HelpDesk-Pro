@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}
+    {{ page_title }}
+    · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <section class="hero-row">
+        <div>
+            <div class="eyebrow">
+                <span class="eyebrow-dot">
+                </span>
+                ADMINISTRATION / DEPARTMENTS
+            </div>
+            <h1>
+                {{ page_title }}
+                <span class="heading-period">
+                    .
+                </span>
+            </h1>
+            <p class="hero-subtitle">
+                Keep department names and descriptions clear for the whole support team.
+            </p>
+        </div>
+    </section>
+    <section class="panel dashboard-panel" style="max-width:820px">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="message error">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            {% for field in form %}
+                <div class="form-field" style="margin-bottom:20px">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+                    {% if field.name == "is_active" %}
+                        <div style="display:flex;gap:10px;align-items:center">
+                            {{ field }}
+                            <span>
+                                Department is available for use
+                            </span>
+                        </div>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+                    {% if field.help_text %}
+                        <small>
+                            {{ field.help_text }}
+                        </small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="field-error">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+                <a class="button secondary" href="{% url 'accounts:departments' %}">
+                    Cancel
+                </a>
+                <button class="button primary" type="submit">
+                    Save department
+                </button>
+            </div>
+        </form>
+    </section>
+{% endblock %}

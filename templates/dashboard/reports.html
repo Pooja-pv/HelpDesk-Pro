@@ -1,0 +1,288 @@
+ {% extends "base.html" %}
+
+{% block title %}Reports · HelpDesk Pro{% endblock %}
+
+{% block content %}
+<section class="hero-row">
+    <div>
+        <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            SUPPORT OPERATIONS / INSIGHTS
+        </div>
+        <h1>
+            Reports &amp; analytics
+            <span class="heading-period">.</span>
+        </h1>
+        <p class="hero-subtitle">
+            A practical view of ticket volume, service deadlines and support workload.
+        </p>
+    </div>
+    <div class="hero-actions">
+        <a class="button secondary" href="{% url 'tickets:export-csv' %}">
+            Download CSV <span>↗</span>
+        </a>
+    </div>
+</section>
+
+<section class="stats-grid">
+    <article class="stat-card stat-total">
+        <div class="stat-top">
+            <span class="stat-icon">▤</span>
+            <span class="stat-trend">All time</span>
+        </div>
+        <span class="stat-label">Total tickets</span>
+        <strong>{{ total_count|default:0 }}</strong>
+        <span class="stat-foot">Every recorded request</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-top">
+            <span class="stat-icon icon-blue">◷</span>
+        </div>
+        <span class="stat-label">Active tickets</span>
+        <strong>{{ active_count|default:0 }}</strong>
+        <span class="stat-foot">Not resolved or closed</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-top">
+            <span class="stat-icon icon-amber">!</span>
+        </div>
+        <span class="stat-label">Overdue</span>
+        <strong>{{ overdue_count|default:0 }}</strong>
+        <span class="stat-foot">Active tickets past SLA</span>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-top">
+            <span class="stat-icon icon-green">✓</span>
+        </div>
+        <span class="stat-label">Resolved / closed</span>
+        <strong>{{ resolved_count|default:0 }}</strong>
+        <span class="stat-foot">Completed requests</span>
+    </article>
+</section>
+
+<section class="dashboard-grid">
+    <div class="panel dashboard-panel">
+        <div class="panel-heading">
+            <div>
+                <span class="panel-kicker">LAST 6 MONTHS</span>
+                <h2>Ticket activity</h2>
+                <p>Created tickets compared with tickets resolved or closed in each month.</p>
+            </div>
+        </div>
+
+        <div class="table-scroll">
+            <table class="ticket-table">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Created</th>
+                        <th>Resolved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in monthly_report %}
+                    <tr>
+                        <td><strong>{{ item.label }}</strong></td>
+                        <td>{{ item.created|default:0 }}</td>
+                        <td>{{ item.resolved|default:0 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No monthly ticket data available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <aside class="panel dashboard-panel">
+        <div class="panel-heading">
+            <div>
+                <span class="panel-kicker">RECENT VOLUME</span>
+                <h2>Last 30 days</h2>
+                <p>Tickets opened during the last 30 days.</p>
+            </div>
+        </div>
+
+        <div class="chart-total">
+            <strong>{{ last_30_days|default:0 }}</strong>
+            <span>new tickets</span>
+        </div>
+
+        <a class="button secondary full" href="{% url 'tickets:list' %}">
+            Review ticket queue <span>→</span>
+        </a>
+    </aside>
+</section>
+
+<section class="dashboard-grid" style="margin-top: 24px;">
+    <div class="panel dashboard-panel">
+        <div class="panel-heading">
+            <div>
+                <span class="panel-kicker">SERVICE LEVEL</span>
+                <h2>Overdue tickets</h2>
+                <p>Open work whose SLA deadline has passed.</p>
+            </div>
+        </div>
+
+        <div class="table-scroll">
+            <table class="ticket-table">
+                <thead>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Priority</th>
+                        <th>Assignee</th>
+                        <th>Deadline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in overdue_tickets %}
+                    <tr>
+                        <td>
+                            <div class="ticket-cell">
+                                <span class="ticket-ref">HD-{{ ticket.pk }}</span>
+                                <a class="ticket-title" href="{% url 'tickets:detail' ticket.pk %}">
+                                    {{ ticket.title }}
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="priority {{ ticket.priority }}">
+                                <i></i>
+                                {{ ticket.get_priority_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if ticket.assigned_to %}
+                                {{ ticket.assigned_to.get_short_name|default:ticket.assigned_to.username }}
+                            {% else %}
+                                <span>Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span style="color: #b42318;">
+                                {{ ticket.sla_deadline|date:"M d, H:i" }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">
+                            <div class="notification-empty">
+                                <span>✓</span>
+                                <p>No overdue tickets.</p>
+                                <small>Active tickets are within their current SLA.</small>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <aside class="panel dashboard-panel">
+        <div class="panel-heading">
+            <div>
+                <span class="panel-kicker">TEAM CAPACITY</span>
+                <h2>Agent workload</h2>
+                <p>Active assigned work and completed tickets.</p>
+            </div>
+        </div>
+
+        <div class="table-scroll">
+            <table class="ticket-table">
+                <thead>
+                    <tr>
+                        <th>Agent</th>
+                        <th>Active</th>
+                        <th>Resolved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for agent in agent_workload %}
+                    <tr>
+                        <td>
+                            <strong>{{ agent.get_short_name|default:agent.username }}</strong>
+                        </td>
+                        <td>{{ agent.active_assigned|default:0 }}</td>
+                        <td>{{ agent.resolved_total|default:0 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No active support agents found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </aside>
+</section>
+
+<section class="panel dashboard-panel" style="margin-top: 24px;">
+    <div class="panel-heading">
+        <div>
+            <span class="panel-kicker">BREAKDOWN</span>
+            <h2>By status and priority</h2>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div>
+            <h3>Status</h3>
+            <div class="table-scroll">
+                <table class="ticket-table">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in status_report %}
+                        <tr>
+                            <td>{{ item.status|title }}</td>
+                            <td><strong>{{ item.total|default:0 }}</strong></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2">No ticket data yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div>
+            <h3>Priority</h3>
+            <div class="table-scroll">
+                <table class="ticket-table">
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in priority_report %}
+                        <tr>
+                            <td>{{ item.priority|title }}</td>
+                            <td><strong>{{ item.total|default:0 }}</strong></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2">No ticket data yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

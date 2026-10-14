@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}
+    New ticket · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <section class="page-intro">
+        <div>
+            <div class="eyebrow">
+                <span class="eyebrow-dot">
+                </span>
+                SUPPORT CENTER / NEW REQUEST
+            </div>
+            <h1>
+                How can we help?
+                <span class="heading-period">
+                    .
+                </span>
+            </h1>
+            <p class="hero-subtitle">
+                Share a few details and the right team will take it from here.
+            </p>
+        </div>
+    </section>
+    <div class="create-layout">
+        <section class="panel form-panel">
+            <div class="form-panel-heading">
+                <span class="form-step">
+                    01
+                </span>
+                <div>
+                    <h2>
+                        Tell us about the issue
+                    </h2>
+                    <p>
+                        Clear details help us resolve your request faster.
+                    </p>
+                </div>
+            </div>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="form-errors">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                {% for field in form %}
+                    <div class="field">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="required-mark">
+                                    *
+                                </span>
+                            {% endif %}
+                        </label>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <small class="error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+                        {% if field.name == 'description' %}
+                            <small class="field-note">
+                                Include what you were doing, what happened, and any steps you already tried.
+                            </small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <div class="form-actions">
+                    <a class="button secondary" href="{% url 'tickets:list' %}">
+                        Cancel
+                    </a>
+                    <button class="button primary" type="submit">
+                        Submit request
+                        <span>
+                            →
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </section>
+        <aside class="panel create-aside">
+            <span class="create-aside-icon">
+                ✳
+            </span>
+            <span class="panel-kicker">
+                WHAT HAPPENS NEXT
+            </span>
+            <h3>
+                We’ll take it from here.
+            </h3>
+            <div class="process-step">
+                <span>
+                    1
+                </span>
+                <div>
+                    <strong>
+                        Request received
+                    </strong>
+                    <p>
+                        Your ticket gets a unique reference number.
+                    </p>
+                </div>
+            </div>
+            <div class="process-step">
+                <span>
+                    2
+                </span>
+                <div>
+                    <strong>
+                        Team review
+                    </strong>
+                    <p>
+                        Support reviews the details and prioritizes the issue.
+                    </p>
+                </div>
+            </div>
+            <div class="process-step">
+                <span>
+                    3
+                </span>
+                <div>
+                    <strong>
+                        Progress updates
+                    </strong>
+                    <p>
+                        Follow replies and status changes in your workspace.
+                    </p>
+                </div>
+            </div>
+            <div class="aside-tip">
+                <span>
+                    ✦
+                </span>
+                <p>
+                    <strong>
+                        Helpful tip
+                    </strong>
+                    <br>
+                    Include any error messages and the steps that led to the issue.
+                </p>
+            </div>
+        </aside>
+    </div>
+{% endblock %}

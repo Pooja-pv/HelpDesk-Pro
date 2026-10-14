@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}
+    My profile · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <section class="page-intro">
+        <div>
+            <div class="eyebrow">
+                <span class="eyebrow-dot">
+                </span>
+                ACCOUNT / PROFILE
+            </div>
+            <h1>
+                My profile
+                <span class="heading-period">
+                    .
+                </span>
+            </h1>
+            <p class="hero-subtitle">
+                Your account details and workspace identity.
+            </p>
+        </div>
+    </section>
+    <section class="profile-layout">
+        <div class="panel profile-card">
+            <div class="profile-cover">
+            </div>
+            <div class="profile-main">
+                <div class="profile-avatar">
+                    {{ user.first_name|first|default:user.username|first|upper }}
+                </div>
+                <h2>
+                    {{ user.get_full_name|default:user.username }}
+                </h2>
+                <p class="muted">
+                    {% if user.is_staff %}
+                        Support team member
+                    {% else %}
+                        Employee account
+                    {% endif %}
+                </p>
+                <span class="profile-status">
+                    <i>
+                    </i>
+                    Account active
+                </span>
+            </div>
+            <div class="profile-facts">
+                <div>
+                    <span>
+                        Username
+                    </span>
+                    <strong>
+                        {{ user.username }}
+                    </strong>
+                </div>
+                <div>
+                    <span>
+                        Work email
+                    </span>
+                    <strong>
+                        {{ user.email|default:"Not provided" }}
+                    </strong>
+                </div>
+                <div>
+                    <span>
+                        First name
+                    </span>
+                    <strong>
+                        {{ user.first_name|default:"—" }}
+                    </strong>
+                </div>
+                <div>
+                    <span>
+                        Last name
+                    </span>
+                    <strong>
+                        {{ user.last_name|default:"—" }}
+                    </strong>
+                </div>
+                <div>
+                    <span>
+                        Member since
+                    </span>
+                    <strong>
+                        {{ user.date_joined|date:"M d, Y" }}
+                    </strong>
+                </div>
+                <div>
+                    <span>
+                        Access role
+                    </span>
+                    <strong>
+                        {% if user.is_superuser %}
+                            Administrator
+                        {% elif user.is_staff %}
+                            Support staff
+                        {% else %}
+                            Employee
+                        {% endif %}
+                    </strong>
+                </div>
+                {% if employee_record %}
+                    <div>
+                        <span>
+                            Employee ID
+                        </span>
+                        <strong>
+                            {{ employee_record.employee_id }}
+                        </strong>
+                    </div>
+                    <div>
+                        <span>
+                            Approval status
+                        </span>
+                        <strong>
+                            {% if employee_record.is_active %}
+                                Approved
+                            {% else %}
+                                Inactive
+                            {% endif %}
+                        </strong>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="profile-actions">
+                <a class="button secondary" href="{% url 'password_change' %}">
+                    Change password
+                    <span>
+                        ↗
+                    </span>
+                </a>
+                <a class="button primary" href="{% url 'dashboard:home' %}">
+                    Back to overview
+                </a>
+            </div>
+        </div>
+        <aside class="panel profile-security">
+            <span class="security-icon">
+                ◇
+            </span>
+            <h3>
+                Keep your account secure
+            </h3>
+            <p>
+                Your account is linked to your approved workplace identity. If your employee details need updating, contact your HelpDesk administrator.
+            </p>
+            <div class="security-divider">
+            </div>
+            <div class="security-item">
+                <span>
+                    Authentication
+                </span>
+                <strong>
+                    Password protected
+                </strong>
+            </div>
+            <div class="security-item">
+                <span>
+                    Workspace access
+                </span>
+                <strong>
+                    Role-based
+                </strong>
+            </div>
+        </aside>
+    </section>
+{% endblock %}

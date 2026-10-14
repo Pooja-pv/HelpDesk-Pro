@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+{% block title %}
+    User management · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <section class="hero-row">
+        <div>
+            <div class="eyebrow">
+                <span class="eyebrow-dot">
+                </span>
+                ADMINISTRATION / ACCESS
+            </div>
+            <h1>
+                User management
+                <span class="heading-period">
+                    .
+                </span>
+            </h1>
+            <p class="hero-subtitle">
+                Control account access, support roles and approved employee registration.
+            </p>
+        </div>
+        <div class="hero-actions">
+            <a class="button secondary" href="{% url 'admin:index' %}">
+                Open Django admin
+                <span>
+                    ↗
+                </span>
+            </a>
+        </div>
+    </section>
+    <section class="stats-grid">
+        <article class="stat-card stat-total">
+            <div class="stat-top">
+                <span class="stat-icon">
+                    ♙
+                </span>
+            </div>
+            <span class="stat-label">
+                Registered users
+            </span>
+            <strong>
+                {{ page_obj.paginator.count }}
+            </strong>
+            <span class="stat-foot">
+                Matching current search
+            </span>
+        </article>
+        <article class="stat-card">
+            <div class="stat-top">
+                <span class="stat-icon icon-blue">
+                    ✓
+                </span>
+            </div>
+            <span class="stat-label">
+                Approved employee IDs
+            </span>
+            <strong>
+                {{ employee_ids|length }}
+            </strong>
+            <span class="stat-foot">
+                Registration records
+            </span>
+        </article>
+    </section>
+    <section class="panel dashboard-panel" style="margin-bottom:24px">
+        <div class="panel-heading">
+            <div>
+                <span class="panel-kicker">
+                    ACCOUNT DIRECTORY
+                </span>
+                <h2>
+                    Users and roles
+                </h2>
+                <p>
+                    Support-agent access is controlled by the staff permission. Superuser accounts are protected.
+                </p>
+            </div>
+        </div>
+        <form method="get" class="filters" style="margin:0 0 18px;padding:0;border:0;box-shadow:none">
+            <div class="field search-field">
+                <label for="user-search">
+                    Search users
+                </label>
+                <div class="search-input-wrap">
+                    <span>
+                        ⌕
+                    </span>
+                    <input id="user-search" type="search" name="q" value="{{ query }}" placeholder="Username, name or email">
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="button primary" type="submit">
+                    Search
+                </button>
+                <a class="button secondary" href="{% url 'accounts:user-management' %}">
+                    Reset
+                </a>
+            </div>
+        </form>
+        <div class="table-scroll">
+            <table class="ticket-table">
+                <thead>
+                    <tr>
+                        <th>
+                            User
+                        </th>
+                        <th>
+                            Email
+                        </th>
+                        <th>
+                            Role
+                        </th>
+                        <th>
+                            Account
+                        </th>
+                        <th>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for managed_user in managed_users %}
+                        <tr>
+                            <td>
+                                <div class="ticket-cell">
+                                    <strong>
+                                        {{ managed_user.get_full_name|default:managed_user.username }}
+                                    </strong>
+                                    <small class="subline">
+                                        @
+                                        {{ managed_user.username }}
+                                    </small>
+                                </div>
+                            </td>
+                            <td>
+                                {{ managed_user.email|default:"—" }}
+                            </td>
+                            <td>
+                                {% if managed_user.is_superuser %}
+                                    <span class="status closed">
+                                        <i>
+                                        </i>
+                                        Administrator
+                                    </span>
+                                {% elif managed_user.is_staff %}
+                                    <span class="status in_progress">
+                                        <i>
+                                        </i>
+                                        Support agent
+                                    </span>
+                                {% else %}
+                                    <span class="status open">
+                                        <i>
+                                        </i>
+                                        Employee
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if managed_user.is_active %}
+                                    <span class="status resolved">
+                                        <i>
+                                        </i>
+                                        Active
+                                    </span>
+                                {% else %}
+                                    <span class="status closed">
+                                        <i>
+                                        </i>
+                                        Inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not managed_user.is_superuser and managed_user.pk != user.pk %}
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                        <form method="post" action="{% url 'accounts:user-toggle-support' managed_user.pk %}">
+                                            {% csrf_token %}
+                                            <button class="button secondary" type="submit">
+                                                {% if managed_user.is_staff %}
+                                                    Make employee
+                                                {% else %}
+                                                    Promote to agent
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url 'accounts:user-toggle-active' managed_user.pk %}" data-confirm="{% if managed_user.is_active %}Deactivate{% else %}Activate{% endif %} {{ managed_user.username }}?">
+                                            {% csrf_token %}
+                                            <button class="button {% if managed_user.is_active %}secondary{% else %}primary{% endif %}" type="submit">
+                                                {% if managed_user.is_active %}
+                                                    Deactivate
+                                                {% else %}
+                                                    Activate
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <span class="muted small-text">
+                                        Protected account
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                No users match this search.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination">
+                <span>
+                    Page
+                    {{ page_obj.number }}
+                    of
+                    {{ page_obj.paginator.num_pages }}
+                </span>
+                <div>
+                    {% if page_obj.has_previous %}
+                        <a href="?q={{ query|urlencode }}&page={{ page_obj.previous_page_number }}">
+                            ← Previous
+                        </a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a href="?q={{ query|urlencode }}&page={{ page_obj.next_page_number }}">
+                            Next →
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </section>
+    <div class="dashboard-grid" style="grid-template-columns:minmax(0,1fr) minmax(300px,.75fr)">
+        <section class="panel dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <span class="panel-kicker">
+                        REGISTRATION CONTROL
+                    </span>
+                    <h2>
+                        Approved employee IDs
+                    </h2>
+                    <p>
+                        Only employees with an active, unused ID and matching email can sign up.
+                    </p>
+                </div>
+            </div>
+            <div class="table-scroll">
+                <table class="ticket-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                Employee ID
+                            </th>
+                            <th>
+                                Name / email
+                            </th>
+                            <th>
+                                Registration
+                            </th>
+                            <th>
+                                Access
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in employee_ids %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{ record.employee_id }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    <div class="ticket-cell">
+                                        {{ record.full_name }}
+                                        <small class="subline">
+                                            {{ record.email }}
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if record.registered_user %}
+                                        Registered:
+                                        {{ record.registered_user.username }}
+                                    {% else %}
+                                        Not registered
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="post" action="{% url 'accounts:employee-id-toggle' record.pk %}">
+                                        {% csrf_token %}
+                                        <button class="button {% if record.is_active %}secondary{% else %}primary{% endif %}" type="submit">
+                                            {% if record.is_active %}
+                                                Deactivate
+                                            {% else %}
+                                                Activate
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4">
+                                    No approved employee IDs yet.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section class="panel dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <span class="panel-kicker">
+                        NEW RECORD
+                    </span>
+                    <h2>
+                        Approve an employee
+                    </h2>
+                    <p>
+                        Add the official details before registration.
+                    </p>
+                </div>
+            </div>
+            <form method="post" action="{% url 'accounts:employee-id-create' %}">
+                {% csrf_token %}
+                {% for field in employee_form %}
+                    <div class="field">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <small class="error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <button class="button primary full" type="submit">
+                    Add approved ID
+                    <span>
+                        →
+                    </span>
+                </button>
+            </form>
+        </section>
+    </div>
+{% endblock %}

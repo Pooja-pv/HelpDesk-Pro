@@ -1,0 +1,304 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101c36">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="data:,">
+  <title>{% block title %}HelpDesk Pro{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20261011-4">
+  <style>
+    .topbar {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 24px;
+      min-width: 0;
+    }
+
+    .brand {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .main-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-width: 0;
+      flex-wrap: nowrap;
+    }
+
+    .main-nav > .nav-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      white-space: nowrap;
+      padding: 11px 12px;
+      gap: 7px;
+    }
+
+    .nav-symbol {
+      flex-shrink: 0;
+    }
+
+    .account-menu {
+      display: flex;
+      align-items: center;
+      justify-self: end;
+      flex-shrink: 0;
+      min-width: 0;
+    }
+
+    .account-trigger {
+      white-space: nowrap;
+    }
+
+    .nav-more {
+      position: relative;
+      display: inline-flex;
+      flex-shrink: 0;
+    }
+
+    .nav-more summary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      list-style: none;
+      cursor: pointer;
+      padding: 11px 12px;
+      border-radius: 12px;
+      color: #71809b;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .nav-more summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .nav-more summary:hover,
+    .nav-more[open] summary {
+      color: #405ff0;
+      background: #f0f3ff;
+    }
+
+    .nav-more-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 1000;
+      width: 220px;
+      padding: 8px;
+      background: #fff;
+      border: 1px solid #e5eaf3;
+      border-radius: 14px;
+      box-shadow: 0 14px 38px rgba(16, 28, 54, .13);
+    }
+
+    .nav-more-menu a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      border-radius: 9px;
+      color: #52617c;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .nav-more-menu a:hover,
+    .nav-more-menu a.active {
+      background: #f0f3ff;
+      color: #405ff0;
+    }
+
+    @media (max-width: 1250px) {
+      .topbar {
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px 20px;
+      }
+
+      .account-menu {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .main-nav {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding: 2px 0 8px;
+        scrollbar-width: thin;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .topbar {
+        gap: 12px;
+      }
+
+      .brand-name {
+        font-size: 18px;
+      }
+
+      .account-copy,
+      .account-chevron {
+        display: none;
+      }
+
+      .main-nav {
+        gap: 3px;
+      }
+
+      .main-nav > .nav-item,
+      .nav-more summary {
+        padding: 10px;
+        font-size: 13px;
+      }
+
+      .nav-more-menu {
+        position: fixed;
+        top: auto;
+        right: 14px;
+        width: min(250px, calc(100vw - 28px));
+      }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'accounts:login' %}{% endif %}">
+      <span class="brand-mark"><span></span><span></span><span></span><span></span></span>
+      <span class="brand-name">helpdesk<span>pro</span></span>
+    </a>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      {% if user.is_authenticated %}
+        <a class="nav-item {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'dashboard:home' %}">
+          <span class="nav-symbol">◫</span> Dashboard
+        </a>
+
+        <a class="nav-item {% if request.resolver_match.namespace == 'tickets' and request.resolver_match.url_name == 'list' or request.resolver_match.namespace == 'tickets' and request.resolver_match.url_name == 'detail' or request.resolver_match.namespace == 'tickets' and request.resolver_match.url_name == 'create' %}active{% endif %}" href="{% url 'tickets:list' %}">
+          <span class="nav-symbol">▤</span> Tickets
+        </a>
+
+        <a class="nav-item {% if request.resolver_match.url_name == 'knowledge-list' or request.resolver_match.url_name == 'knowledge-create' or request.resolver_match.url_name == 'knowledge-detail' or request.resolver_match.url_name == 'knowledge-edit' %}active{% endif %}" href="{% url 'dashboard:knowledge-list' %}">
+          <span class="nav-symbol">▧</span> Knowledge base
+        </a>
+
+        <a class="nav-item {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}" href="{% url 'tickets:notifications' %}">
+          <span class="nav-symbol">♧</span>
+          Notifications
+          {% if unread_notification_count %}
+            <span class="notification-count">{{ unread_notification_count }}</span>
+          {% endif %}
+        </a>
+
+        {% if user.is_staff or user.is_superuser %}
+          <details class="nav-more">
+            <summary><span class="nav-symbol">☰</span> More <span>⌄</span></summary>
+            <div class="nav-more-menu">
+              {% if user.is_staff %}
+                <a class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}" href="{% url 'dashboard:reports' %}">
+                  <span class="nav-symbol">▥</span> Reports
+                </a>
+                <a class="{% if request.resolver_match.url_name == 'departments' or request.resolver_match.url_name == 'department-create' or request.resolver_match.url_name == 'department-edit' %}active{% endif %}" href="{% url 'accounts:departments' %}">
+                  <span class="nav-symbol">▦</span> Departments
+                </a>
+                <a href="{% url 'admin:index' %}">
+                  <span class="nav-symbol">⚙</span> Admin
+                </a>
+              {% endif %}
+
+              {% if user.is_superuser %}
+                <a class="{% if request.resolver_match.url_name == 'user-management' %}active{% endif %}" href="{% url 'accounts:user-management' %}">
+                  <span class="nav-symbol">♙</span> User management
+                </a>
+              {% endif %}
+            </div>
+          </details>
+        {% endif %}
+      {% else %}
+        <a class="nav-item" href="{% url 'accounts:login' %}">Sign in</a>
+        <a class="button primary nav-signup" href="{% url 'accounts:signup' %}">Get started <span>↗</span></a>
+      {% endif %}
+    </nav>
+
+    {% if user.is_authenticated %}
+      <div class="account-menu">
+        <a class="account-trigger" href="{% url 'accounts:profile' %}" aria-label="View profile">
+          <span class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</span>
+          <span class="account-copy">
+            <strong>{{ user.get_short_name|default:user.username }}</strong>
+            <small>{% if user.is_staff %}Support team{% else %}Employee account{% endif %}</small>
+          </span>
+          <span class="account-chevron">⌄</span>
+        </a>
+        <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button class="logout-button" type="submit" title="Sign out" aria-label="Sign out">↗</button>
+        </form>
+      </div>
+    {% endif %}
+  </header>
+
+  <main class="container">
+    {% if messages %}
+      <div class="messages" role="status" aria-live="polite">
+        {% for message in messages %}
+          <div class="message {{ message.tags }}">
+            <span class="message-mark">{% if message.tags == 'error' %}!{% else %}✓{% endif %}</span>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <span class="footer-brand">helpdesk<span>pro</span></span>
+    <span>One workspace. Better support.</span>
+    <span>© {% now "Y" %} HelpDesk Pro</span>
+  </footer>
+</div>
+
+<script>
+  document.querySelectorAll('[data-confirm]').forEach(function (element) {
+    element.addEventListener('click', function (event) {
+      if (!window.confirm(element.dataset.confirm)) {
+        event.preventDefault();
+      }
+    });
+  });
+
+  document.querySelectorAll('.nav-more').forEach(function (menu) {
+    document.addEventListener('click', function (event) {
+      if (!menu.contains(event.target)) {
+        menu.open = false;
+      }
+    });
+
+    menu.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        menu.open = false;
+      });
+    });
+  });
+</script>
+</body>
+</html>

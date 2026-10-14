@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}
+    Knowledge base · HelpDesk Pro
+{% endblock %}
+{% block content %}
+    <section class="hero-row">
+        <div>
+            <div class="eyebrow">
+                <span class="eyebrow-dot">
+                </span>
+                SELF-SERVICE / KNOWLEDGE
+            </div>
+            <h1>
+                Knowledge base
+                <span class="heading-period">
+                    .
+                </span>
+            </h1>
+            <p class="hero-subtitle">
+                Practical guides that help employees solve common issues faster.
+            </p>
+        </div>
+        {% if user.is_staff %}
+            <div class="hero-actions">
+                <a class="button primary" href="{% url 'dashboard:knowledge-create' %}">
+                    <span class="button-plus">
+                        ＋
+                    </span>
+                    Write article
+                </a>
+            </div>
+        {% endif %}
+    </section>
+    <form class="panel filters" method="get">
+        <div class="field search-field">
+            <label for="knowledge-q">
+                Search guides
+            </label>
+            <div class="search-input-wrap">
+                <span>
+                    ⌕
+                </span>
+                <input id="knowledge-q" type="search" name="q" value="{{ query }}" placeholder="Password, VPN, email, access…">
+            </div>
+        </div>
+        <div class="field">
+            <label for="knowledge-category">
+                Category
+            </label>
+            <select id="knowledge-category" name="category">
+                <option value="">
+                    All categories
+                </option>
+                {% for item in categories %}
+                    <option value="{{ item }}" {% if selected_category == item %}selected{% endif %}>
+                        {{ item }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button class="button primary" type="submit">
+                Search
+            </button>
+            <a class="button secondary" href="{% url 'dashboard:knowledge-list' %}">
+                Reset
+            </a>
+        </div>
+    </form>
+    <div class="knowledge-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px;margin-top:20px">
+        {% for article in articles %}
+            <article class="panel dashboard-panel">
+                <span class="panel-kicker">
+                    {{ article.category }}
+                </span>
+                <h2 style="margin:10px 0">
+                    {{ article.title }}
+                </h2>
+                <p class="muted">
+                    {{ article.summary }}
+                </p>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px">
+                    <small class="muted">
+                        Updated
+                        {{ article.updated_at|date:"M d, Y" }}
+                    </small>
+                    <a class="text-link" href="{% url 'dashboard:knowledge-detail' article.slug %}">
+                        Read guide ↗
+                    </a>
+                </div>
+                {% if user.is_staff and not article.is_published %}
+                    <span class="status waiting" style="margin-top:12px">
+                        Draft
+                    </span>
+                {% endif %}
+            </article>
+        {% empty %}
+            <div class="panel dashboard-panel empty">
+                <div class="empty-icon">
+                    ✧
+                </div>
+                <h3>
+                    No articles found
+                </h3>
+                <p>
+                    {% if user.is_staff %}
+                        Create the first knowledge article to help employees resolve common requests.
+                    {% else %}
+                        Try a different search, or check back as new guides are published.
+                    {% endif %}
+                </p>
+                {% if user.is_staff %}
+                    <a class="button primary" href="{% url 'dashboard:knowledge-create' %}">
+                        Write first article
+                    </a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            <span>
+                Page
+                {{ page_obj.number }}
+                of
+                {{ page_obj.paginator.num_pages }}
+            </span>
+            <div>
+                {% if page_obj.has_previous %}
+                    <a href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&page={{ page_obj.previous_page_number }}">
+                        ← Previous
+                    </a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&page={{ page_obj.next_page_number }}">
+                        Next →
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
