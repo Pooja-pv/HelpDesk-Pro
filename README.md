@@ -2,6 +2,10 @@
 
 HelpDesk Pro is a web application built with Python and Django for managing employee support requests. Employees can raise tickets, support agents can handle assigned tickets, and administrators can manage users and the support process.
 
+🌐 **Live Demo:** https://helpdesk-pro-l0ra.onrender.com
+
+💻 **GitHub Repository:** https://github.com/Pooja-pv/HelpDesk-Pro
+
 ## Screenshots
 
 ### Login Page
@@ -120,7 +124,7 @@ To use PostgreSQL, create a `.env` file in the project root with your database d
 ```env
 DJANGO_SECRET_KEY=replace-with-a-secret-key
 DJANGO_DEBUG=True
-DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
+ALLOWED_HOSTS=127.0.0.1,localhost
 
 DB_ENGINE=postgres
 DB_NAME=helpdesk_pro_db
@@ -155,6 +159,17 @@ python manage.py runserver
 ```
 
 Open http://127.0.0.1:8000/ in your browser.
+
+## Deployment
+
+The application is deployed using:
+
+- **Render:** Web application hosting
+- **Neon PostgreSQL:** Hosted database
+- **Gunicorn:** WSGI application server
+- **WhiteNoise:** Static file serving
+
+The production configuration uses environment variables to manage sensitive settings and database connections.
 
 ## Application Workflow
 
